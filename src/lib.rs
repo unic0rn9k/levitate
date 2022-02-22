@@ -5,8 +5,41 @@
 //!
 //! - https://lib.rs/crates/num
 //! - https://lib.rs/crates/fast-floats
+//!
+//! # Example
+//!
+//! Bellow an example of eulers identity is shown.
+//!
+//! $$
+//! e^{\pi\cdot i} = -1
+//! $$
+//!
+//! ```rust
+//! use num::*;
+//!
+//! assert!(
+//!     (re(fast(std::f32::consts::PI)) * im(fast(1.))).exp_().into_primitive()
+//!     .abs() - 1. < 0.0000002
+//! );
+//! ```
 
-#![feature(const_trait_impl, core_intrinsics)]
+#![feature(const_trait_impl, core_intrinsics, const_fn_trait_bound)]
+
+#[macro_export]
+macro_rules! num {
+    (0) => {
+        <_>::_0
+    };
+    (1) => {
+        <_>::_1
+    };
+    (2) => {
+        <_>::_2
+    };
+    ($f: literal) => {
+        <_>::from_f64($f)
+    };
+}
 
 use std::ops::*;
 
@@ -100,41 +133,41 @@ pub mod _fast_floats {
     use fast_floats::*;
 
     macro_rules! def_fast_primitive {
-    ($t: ty) => {
-        impl const BackedByPrimitive for Fast<$t> {
-            type Primitive = $t;
+        ($t: ty) => {
+            impl const BackedByPrimitive for Fast<$t> {
+                type Primitive = $t;
 
-            #[inline(always)]
-            fn from_primitive(f: Self::Primitive) -> Self {
-                unsafe{ Self::new(f) }
+                #[inline(always)]
+                fn from_primitive(f: Self::Primitive) -> Self {
+                    unsafe{ Self::new(f) }
+                }
+
+                #[inline(always)]
+                fn into_primitive(self) -> Self::Primitive {
+                    *self
+                }
+
+                #[inline(always)]
+                fn from_f64(f: f64) -> Self {
+                    unsafe{ Self::new(f as $t) }
+                }
             }
 
-            #[inline(always)]
-            fn into_primitive(self) -> Self::Primitive {
-                *self
+            impl Float for Fast<$t> {
+                const _0: Self = unsafe{ Fast::new(0.) };
+                const _1: Self = unsafe{ Fast::new(1.) };
+                const _2: Self = unsafe{ Fast::new(2.) };
+
+                impl_wrapper!(powi (p: i32) { .into() } -> Self);
+                impl_wrapper!(hypot (other { .deref().clone() } : Self) { .into() } -> Self);
+
+                impl_wrapper!(sqrt { .into() } -> Self);
+                impl_wrapper!(exp { .into() } -> $t);
+                impl_wrapper!(sin { .into() } -> $t);
+                impl_wrapper!(cos { .into() } -> $t);
             }
-
-            #[inline(always)]
-            fn from_f64(f: f64) -> Self {
-                unsafe{ Self::new(f as $t) }
-            }
-        }
-
-        impl Float for Fast<$t> {
-            const _0: Self = unsafe{ Fast::new(0.) };
-            const _1: Self = unsafe{ Fast::new(1.) };
-            const _2: Self = unsafe{ Fast::new(2.) };
-
-            impl_wrapper!(powi (p: i32) { .into() } -> Self);
-            impl_wrapper!(hypot (other { .deref().clone() } : Self) { .into() } -> Self);
-
-            impl_wrapper!(sqrt { .into() } -> Self);
-            impl_wrapper!(exp { .into() } -> $t);
-            impl_wrapper!(sin { .into() } -> $t);
-            impl_wrapper!(cos { .into() } -> $t);
-        }
-    };
-}
+        };
+    }
 
     def_fast_primitive!(f32);
     def_fast_primitive!(f64);
@@ -180,31 +213,31 @@ pub struct Complex<T: Float> {
 
 impl<T: Float> From<T> for Complex<T> {
     fn from(n: T) -> Self {
-        Self { re: n, im: T::_0 }
+        Self { re: n, im: num!(0) }
     }
 }
 
-impl<T: PrimitiveFloat> BackedByPrimitive for Complex<T> {
+impl<T: Float> BackedByPrimitive for Complex<T> {
     type Primitive = T;
 
     fn from_primitive(f: Self::Primitive) -> Self {
-        Self { re: f, im: T::_0 }
+        Self { re: f, im: num!(0) }
     }
 
-    fn into_primitive(self) -> Self::Primitive {
+    fn into_primitive(self) -> T {
         //eprint!("Converting complex number to primitive should be done with self.re, instead of self.into_primitive.");
-        self.re.into_primitive()
+        self.re
     }
 
     fn from_f64(f: f64) -> Self {
         Self {
             re: T::from_f64(f),
-            im: T::_0,
+            im: num!(0),
         }
     }
 }
 
-impl<T: PrimitiveFloat> Float for Complex<T> {
+impl<T: Float> Float for Complex<T> {
     const _0: Self = Self {
         re: T::_0,
         im: T::_0,
@@ -218,7 +251,6 @@ impl<T: PrimitiveFloat> Float for Complex<T> {
         im: T::_0,
     };
 
-    /// This function os currently unimplemented for complex numbers, you can still use `number * number`.
     fn powi_(self, n: i32) -> Self {
         let mut prod = Self::_1;
         for _ in 0..n {
@@ -230,8 +262,8 @@ impl<T: PrimitiveFloat> Float for Complex<T> {
     fn sqrt_(self) -> Self {
         let norm = self.re.hypot_(self.im);
         Self {
-            re: ((norm + self.re) / T::_2).sqrt_(),
-            im: ((norm - self.re) / T::_2).sqrt_(),
+            re: ((norm + self.re) / num!(2)).sqrt_(),
+            im: ((norm - self.re) / num!(2)).sqrt_(),
         }
     }
 
@@ -240,16 +272,15 @@ impl<T: PrimitiveFloat> Float for Complex<T> {
     }
 
     fn exp_(self) -> T {
-        self.re.cos_() + self.im * self.re.sin_()
+        T::from_primitive(self.re.cos_()) + self.im * T::from_primitive(self.re.sin_())
     }
 
     fn cos_(self) -> T {
         let mut neg_self = self;
-        neg_self.re = self.re * T::from_f64(-1.);
-        (self.exp_() + (neg_self).exp_()) / T::from_f64(2.)
+        neg_self.re = self.re * num!(-1.);
+        (self.exp_() + (neg_self).exp_()) / num!(2)
     }
 
-    //FIXME
     fn sin_(self) -> T {
         todo!()
     }
@@ -291,3 +322,15 @@ gen_tests!(f64, trig_f64);
 use fast_floats::Fast;
 gen_tests!(Fast::<f32>, trig_fast_f32);
 gen_tests!(Fast::<f64>, trig_fast_f64);
+
+pub const fn im<F: Float + Sized>(f: F) -> Complex<F> {
+    Complex { re: F::_0, im: f }
+}
+pub const fn re<F: Float + Sized>(f: F) -> Complex<F> {
+    Complex { re: f, im: F::_0 }
+}
+
+#[cfg(feature = "fast-floats")]
+pub const fn fast<F: Float + Sized>(f: F) -> fast_floats::Fast<F> {
+    unsafe { fast_floats::Fast::new(f) }
+}
