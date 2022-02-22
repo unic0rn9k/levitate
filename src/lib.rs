@@ -281,7 +281,9 @@ impl<T: Float> Float for Complex<T> {
     }
 
     fn sin_(self) -> Self {
-        todo!()
+        let mut neg_self = self;
+        neg_self.re = self.re * num!(-1.);
+        (self.exp_() - (neg_self).exp_()) / (Self::_2 * self.re.into())
     }
 }
 
