@@ -74,6 +74,7 @@ pub trait Float:
 macro_rules! impl_wrapper {
 	($fn: ident $( ($($arg: ident $({$($pre: tt)*})? : $t: ty),*) )? { $($finalize: tt)* } -> $re: ty) => {
 		paste!{
+            #[inline(always)]
             fn [< $fn _ >] (self $(, $($arg: $t),* )? ) -> $re {
                 self . $fn($($( $arg $($($pre)*)? ),*)?) $($finalize)*
             }
@@ -321,14 +322,18 @@ use fast_floats::Fast;
 gen_tests!(Fast::<f32>, trig_fast_f32);
 gen_tests!(Fast::<f64>, trig_fast_f64);
 
+/// Same as `Complex{re: 0., im: f}`
 pub const fn im<F: Float + Sized>(f: F) -> Complex<F> {
-    Complex { re: F::_0, im: f }
+    Complex { re: num!(0), im: f }
 }
+
+/// Same as `Complex{re: f, im: 0.}`
 pub const fn re<F: Float + Sized>(f: F) -> Complex<F> {
-    Complex { re: f, im: F::_0 }
+    Complex { re: f, im: num!(0) }
 }
 
 #[cfg(feature = "fast-floats")]
+/// Same as `unsafe{ Fast::new(f) }`
 pub const fn fast<F: Float + Sized>(f: F) -> fast_floats::Fast<F> {
     unsafe { fast_floats::Fast::new(f) }
 }
