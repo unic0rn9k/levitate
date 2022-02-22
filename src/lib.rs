@@ -10,16 +10,14 @@
 //!
 //! Bellow an example of eulers identity is shown.
 //!
-//! <div style="background-color: #fff;">
 //! <img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1">
-//! </div>
 //!
 //! ```rust
 //! use num::*;
 //!
-//! assert!(
-//!     (re(fast(std::f32::consts::PI)) * im(fast(1.))).exp_().into_primitive()
-//!     .abs() - 1. < 0.0000002
+//! assert_eq!(
+//!     im(std::f32::consts::PI).exp_().re,
+//!     -1.
 //! );
 //! ```
 
@@ -68,9 +66,9 @@ pub trait Float:
     fn sqrt_(self) -> Self;
     fn powi_(self, p: i32) -> Self;
     fn hypot_(self, other: Self) -> Self;
-    fn exp_(self) -> Self::Primitive;
-    fn sin_(self) -> Self::Primitive;
-    fn cos_(self) -> Self::Primitive;
+    fn exp_(self) -> Self;
+    fn sin_(self) -> Self;
+    fn cos_(self) -> Self;
 }
 
 macro_rules! impl_wrapper {
@@ -162,9 +160,9 @@ pub mod _fast_floats {
                 impl_wrapper!(hypot (other { .deref().clone() } : Self) { .into() } -> Self);
 
                 impl_wrapper!(sqrt { .into() } -> Self);
-                impl_wrapper!(exp { .into() } -> $t);
-                impl_wrapper!(sin { .into() } -> $t);
-                impl_wrapper!(cos { .into() } -> $t);
+                impl_wrapper!(exp { .into() } -> Self);
+                impl_wrapper!(sin { .into() } -> Self);
+                impl_wrapper!(cos { .into() } -> Self);
             }
         };
     }
@@ -271,17 +269,17 @@ impl<T: Float> Float for Complex<T> {
         (self * self + other * other).sqrt_()
     }
 
-    fn exp_(self) -> T {
-        T::from_primitive(self.re.cos_()) + self.im * T::from_primitive(self.re.sin_())
+    fn exp_(self) -> Self {
+        (re(self.im.cos_()) + im(self.im.sin_())) * re(self.re.exp_())
     }
 
-    fn cos_(self) -> T {
+    fn cos_(self) -> Self {
         let mut neg_self = self;
         neg_self.re = self.re * num!(-1.);
         (self.exp_() + (neg_self).exp_()) / num!(2)
     }
 
-    fn sin_(self) -> T {
+    fn sin_(self) -> Self {
         todo!()
     }
 }
