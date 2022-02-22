@@ -15,8 +15,8 @@ Bellow an example of eulers identity is shown.
 ```rust
 use num::*;
 
-assert!(
-    (re(fast(std::f32::consts::PI)) * im(fast(1.))).exp_().into_primitive()
-    .abs() - 1. < 0.0000002
+assert_eq!(
+    im(std::f32::consts::PI).exp_().re,
+    -1.
 );
 ```
