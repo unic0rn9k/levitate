@@ -1,11 +1,5 @@
 //! # Numbers [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/unic0rn9k/num/Rust?label=tests&logo=github)](https://github.com/unic0rn9k/num/actions/workflows/rust.yml)
 //!
-//! # Thanks
-//! Heavy inspiration has been taken from crates listed bellow.
-//!
-//! - https://lib.rs/crates/num
-//! - https://lib.rs/crates/fast-floats
-//!
 //! # Example
 //!
 //! Bellow an example of eulers identity is shown.
@@ -20,6 +14,12 @@
 //!     -1.
 //! );
 //! ```
+//!
+//! # Thanks
+//! Heavy inspiration has been taken from crates listed bellow.
+//!
+//! - [lib.rs/num](https://lib.rs/crates/num)
+//! - [lib.rs/fast-floats](https://lib.rs/crates/fast-floats)
 
 #![feature(const_trait_impl, core_intrinsics, const_fn_trait_bound)]
 
