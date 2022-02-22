@@ -10,7 +10,7 @@ Heavy inspiration has been taken from crates listed bellow.
 
 Bellow an example of eulers identity is shown.
 
-<img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1">
+e^(i * pi) = -1
 
 ```rust
 use num::*;
