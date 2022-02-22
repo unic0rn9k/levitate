@@ -10,7 +10,9 @@
 //!
 //! Bellow an example of eulers identity is shown.
 //!
-//! <img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1" style="background: #fff;">
+//! <div style="background-color: #fff;">
+//! <img src="https://render.githubusercontent.com/render/math?math=e^{i \pi} = -1">
+//! </div>
 //!
 //! ```rust
 //! use num::*;
