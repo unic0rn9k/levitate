@@ -206,28 +206,37 @@ impl<T: Float> Div<Self> for Complex<T> {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 #[repr(C)]
 pub struct Complex<T: Float> {
     pub re: T,
     pub im: T,
 }
 
-impl<T: Display + FloatWrapper<InnerFloat = f32> + Float> Display for Complex<T> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "({} {} {}im)",
-            self.re,
-            if self.im.into_primitive().is_sign_positive() {
-                "+"
-            } else {
-                "-"
-            },
-            self.im.into_primitive().abs()
-        )
-    }
+macro_rules! impl_complex_debug {
+	(($($t: ty),*) ($($trait: ty),*)) => {
+        $($(
+            impl<T: $trait + FloatWrapper<InnerFloat = $t> + Float> Display for Complex<T> {
+                fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                    write!(
+                        f,
+                        "({} {} {}im)",
+                        self.re,
+                        if self.im.into_primitive().is_sign_positive() {
+                            "+"
+                        } else {
+                            "-"
+                        },
+                        self.im.into_primitive().abs()
+                    )
+                }
+            }
+        )*)*
+
+	};
 }
+
+impl_complex_debug!((f32, f64)(Debug, Display));
 
 impl<T: Float> From<T> for Complex<T> {
     fn from(n: T) -> Self {
