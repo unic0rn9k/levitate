@@ -39,10 +39,7 @@ macro_rules! num {
     };
 }
 
-use std::{
-    fmt::{Debug, Display},
-    ops::*,
-};
+use std::ops::*;
 
 pub trait PrimitiveFloat: Float + FloatWrapper<InnerFloat = Self> {}
 
@@ -214,29 +211,41 @@ pub struct Complex<T: Float> {
 }
 
 macro_rules! impl_complex_debug {
-	(($($t: ty),*) ($($trait: ty),*)) => {
-        $($(
-            impl<T: $trait + FloatWrapper<InnerFloat = $t> + Float> Display for Complex<T> {
+    (write $self:ident: $f: ty => $to: ident) => {unsafe{
+        let re: &$f = std::mem::transmute(&$self.re);
+        let im: &$f = std::mem::transmute(&$self.im);
+        write!(
+            $to,
+            "({} {} {}im)",
+            re,
+            if im.into_primitive().is_sign_positive() {
+                "+"
+            } else {
+                "-"
+            },
+            im.into_primitive().abs()
+        )
+    }};
+	(impl $($trait: tt)*) => {
+        $(
+            impl<F: PrimitiveFloat + Display, T: FloatWrapper<InnerFloat = F> + Float> $trait for Complex<T> {
                 fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                    write!(
-                        f,
-                        "({} {} {}im)",
-                        self.re,
-                        if self.im.into_primitive().is_sign_positive() {
-                            "+"
-                        } else {
-                            "-"
-                        },
-                        self.im.into_primitive().abs()
-                    )
+                    let float_size = std::mem::size_of::<F>();
+                    if float_size == 4{
+                        impl_complex_debug!(write self: f32 => f)
+                    }else if float_size == 8{
+                        impl_complex_debug!(write self: f64 => f)
+                    }else{
+                        unimplemented!()
+                    }
                 }
             }
-        )*)*
-
+        )*
 	};
 }
 
-impl_complex_debug!((f32, f64)(Debug, Display));
+use std::fmt::*;
+impl_complex_debug!(impl Debug Display);
 
 impl<T: Float> From<T> for Complex<T> {
     fn from(n: T) -> Self {
