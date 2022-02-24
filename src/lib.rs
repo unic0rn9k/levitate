@@ -217,7 +217,7 @@ impl<T: Display + FloatWrapper<InnerFloat = f32> + Float> Display for Complex<T>
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "({} {} {}i)",
+            "({} {} {}im)",
             self.re,
             if self.im.into_primitive().is_sign_positive() {
                 "+"
