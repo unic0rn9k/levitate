@@ -39,14 +39,17 @@ macro_rules! num {
     };
 }
 
-use std::ops::*;
+use std::{
+    fmt::{Debug, Display},
+    ops::*,
+};
 
-pub trait PrimitiveFloat: Float + BackedByPrimitive<Primitive = Self> {}
+pub trait PrimitiveFloat: Float + FloatWrapper<InnerFloat = Self> {}
 
-pub trait BackedByPrimitive {
-    type Primitive;
-    fn from_primitive(f: Self::Primitive) -> Self;
-    fn into_primitive(self) -> Self::Primitive;
+pub trait FloatWrapper {
+    type InnerFloat: Float;
+    fn from_primitive(f: Self::InnerFloat) -> Self;
+    fn into_primitive(self) -> Self::InnerFloat;
     fn from_f64(f: f64) -> Self;
 }
 
@@ -56,7 +59,7 @@ pub trait Float:
     + Mul<Self, Output = Self>
     + Sub<Self, Output = Self>
     + Copy
-    + BackedByPrimitive
+    + FloatWrapper
     + PartialEq
 {
     const _0: Self;
@@ -84,16 +87,16 @@ macro_rules! impl_wrapper {
 
 macro_rules! def_primitive {
     ($t: ty) => {
-        impl const BackedByPrimitive for $t {
-            type Primitive = $t;
+        impl const FloatWrapper for $t {
+            type InnerFloat = $t;
 
             #[inline(always)]
-            fn from_primitive(f: Self::Primitive) -> Self {
+            fn from_primitive(f: Self::InnerFloat) -> Self {
                 f
             }
 
             #[inline(always)]
-            fn into_primitive(self) -> Self::Primitive {
+            fn into_primitive(self) -> Self::InnerFloat {
                 self
             }
 
@@ -133,16 +136,16 @@ pub mod _fast_floats {
 
     macro_rules! def_fast_primitive {
         ($t: ty) => {
-            impl const BackedByPrimitive for Fast<$t> {
-                type Primitive = $t;
+            impl const FloatWrapper for Fast<$t> {
+                type InnerFloat = $t;
 
                 #[inline(always)]
-                fn from_primitive(f: Self::Primitive) -> Self {
+                fn from_primitive(f: Self::InnerFloat) -> Self {
                     unsafe{ Self::new(f) }
                 }
 
                 #[inline(always)]
-                fn into_primitive(self) -> Self::Primitive {
+                fn into_primitive(self) -> Self::InnerFloat {
                     *self
                 }
 
@@ -210,16 +213,22 @@ pub struct Complex<T: Float> {
     pub im: T,
 }
 
+impl<T: Display + Float> Display for Complex<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} + {}im", self.re, self.im)
+    }
+}
+
 impl<T: Float> From<T> for Complex<T> {
     fn from(n: T) -> Self {
         Self { re: n, im: num!(0) }
     }
 }
 
-impl<T: Float> BackedByPrimitive for Complex<T> {
-    type Primitive = T;
+impl<T: Float> FloatWrapper for Complex<T> {
+    type InnerFloat = T;
 
-    fn from_primitive(f: Self::Primitive) -> Self {
+    fn from_primitive(f: Self::InnerFloat) -> Self {
         Self { re: f, im: num!(0) }
     }
 
