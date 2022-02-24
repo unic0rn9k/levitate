@@ -213,9 +213,19 @@ pub struct Complex<T: Float> {
     pub im: T,
 }
 
-impl<T: Display + Float> Display for Complex<T> {
+impl<T: Display + FloatWrapper<InnerFloat = f32> + Float> Display for Complex<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} + {}im", self.re, self.im)
+        write!(
+            f,
+            "({} {} {} i)",
+            self.re,
+            if self.im.into_primitive().is_sign_positive() {
+                "+"
+            } else {
+                "-"
+            },
+            self.im.into_primitive().abs()
+        )
     }
 }
 
