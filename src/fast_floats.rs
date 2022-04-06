@@ -178,6 +178,9 @@ impl_assignop! {
 }
 
 use core::fmt;
+use std::ops::Neg;
+
+use crate::{fast, Float};
 macro_rules! impl_format {
     ($($name:ident)+) => {
         $(
@@ -243,5 +246,13 @@ mod tests {
 
         let f = |_: f32| {};
         unsafe { f(*FF32::new(0.)) };
+    }
+}
+
+impl<T: Float> Neg for Fast<T> {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        fast(-self.0)
     }
 }
