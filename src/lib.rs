@@ -64,6 +64,10 @@ pub trait Float:
     + FloatWrapper
     + PartialEq
     + Neg<Output = Self>
+    + AddAssign
+    + SubAssign
+    + MulAssign
+    + DivAssign
 {
     const _0: Self;
     const _1: Self;

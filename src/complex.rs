@@ -194,3 +194,18 @@ fn complex_neg() {
     assert_eq!(-(a + b), re(-1.) * (a + b));
     assert_eq!(-(a - b), re(-1.) * (a - b));
 }
+
+macro_rules! impl_op_assign {
+	($op: tt $name: ident $fn: ident) => {
+        impl<T:Float> $name for Complex<T>{
+            fn $fn(&mut self, rhs: Self) {
+                *self = *self $op rhs
+            }
+        }
+	};
+}
+
+impl_op_assign!(* MulAssign mul_assign);
+impl_op_assign!(/ DivAssign div_assign);
+impl_op_assign!(- SubAssign sub_assign);
+impl_op_assign!(+ AddAssign add_assign);
