@@ -7,7 +7,7 @@
 //! e^(i * pi) = -1
 //!
 //! ```rust
-//! use num::*;
+//! use levitate::*;
 //!
 //! assert_eq!(
 //!     im(std::f32::consts::PI).exp_().re,
