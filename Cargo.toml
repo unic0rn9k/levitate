@@ -2,6 +2,8 @@
 name = "levitate"
 version = "0.1.0"
 edition = "2021"
+license = "mit"
+description = "Just works solution to numbers, mainly aimed at floats and mathematical use cases."
 
 [dependencies]
 paste = "1.0.6"
