@@ -16,3 +16,11 @@ paste = "1.0.6"
 [features]
 fast-floats = [] #["dep:fast-floats"]
 default = ["fast-floats"]
+
+[profile.release.package."*"]
+opt-level = 3
+
+[profile.release]
+opt-level = 3
+lto=true
+codegen-units = 1
