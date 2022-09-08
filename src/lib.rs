@@ -28,6 +28,10 @@ use paste::paste;
 mod complex;
 pub use complex::*;
 
+#[deprecated(
+    since = "0.1.1",
+    note = "please use `<_>::from_primitive({float})` or `<_ as Float>::_0`, `<_ as Float>::_1` or `<_ as Float>::_2` instead"
+)]
 #[macro_export]
 macro_rules! num {
     (0) => {

@@ -1,6 +1,6 @@
 [package]
 name = "levitate"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 license = "MIT"
 description = "Just works solution to numbers, mainly aimed at floats and mathematical use cases."
@@ -9,12 +9,8 @@ repository = "https://github.com/unic0rn9k/levitate"
 [dependencies]
 paste = "1.0.6"
 
-#[dependencies.fast-floats]
-#git = 'https://github.com/unic0rn9k/fast-floats'
-#optional = true
-
 [features]
-fast-floats = [] #["dep:fast-floats"]
+fast-floats = []
 default = ["fast-floats"]
 
 [profile.release.package."*"]

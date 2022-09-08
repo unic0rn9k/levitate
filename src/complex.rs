@@ -77,7 +77,7 @@ impl_complex_debug!(impl Debug Display);
 
 impl<T: Float> From<T> for Complex<T> {
     fn from(n: T) -> Self {
-        Self { re: n, im: num!(0) }
+        Self { re: n, im: T::_0 }
     }
 }
 
@@ -85,7 +85,7 @@ impl<T: Float> FloatWrapper for Complex<T> {
     type InnerFloat = T;
 
     fn from_primitive(f: Self::InnerFloat) -> Self {
-        Self { re: f, im: num!(0) }
+        Self { re: f, im: T::_0 }
     }
 
     fn into_primitive(self) -> T {
@@ -96,7 +96,7 @@ impl<T: Float> FloatWrapper for Complex<T> {
     fn from_f64(f: f64) -> Self {
         Self {
             re: T::from_f64(f),
-            im: num!(0),
+            im: T::_0,
         }
     }
 }
@@ -137,8 +137,8 @@ impl<T: Float> Float for Complex<T> {
     fn sqrt_(self) -> Self {
         let norm = self.re.hypot_(self.im);
         Self {
-            re: ((norm + self.re) / num!(2)).sqrt_(),
-            im: ((norm - self.re) / num!(2)).sqrt_(),
+            re: ((norm + self.re) / T::_2).sqrt_(),
+            im: ((norm - self.re) / T::_2).sqrt_(),
         }
     }
 
@@ -152,13 +152,13 @@ impl<T: Float> Float for Complex<T> {
 
     fn cos_(self) -> Self {
         let mut neg_self = self;
-        neg_self.re = self.re * num!(-1.);
-        (self.exp_() + (neg_self).exp_()) / num!(2)
+        neg_self.re = self.re * -T::_1;
+        (self.exp_() + (neg_self).exp_()) / Self::_2
     }
 
     fn sin_(self) -> Self {
         let mut neg_self = self;
-        neg_self.re = self.re * num!(-1.);
+        neg_self.re = self.re * -T::_1;
         (self.exp_() - (neg_self).exp_()) / (Self::_2 * self.re.into())
     }
 
@@ -179,12 +179,12 @@ impl<T: Float> From<[T; 2]> for Complex<T> {
 
 /// Same as `Complex{re: 0., im: f}`
 pub const fn im<F: Float + Sized>(f: F) -> Complex<F> {
-    Complex { re: num!(0), im: f }
+    Complex { re: F::_0, im: f }
 }
 
 /// Same as `Complex{re: f, im: 0.}`
 pub const fn re<F: Float + Sized>(f: F) -> Complex<F> {
-    Complex { re: f, im: num!(0) }
+    Complex { re: f, im: F::_0 }
 }
 
 #[test]
