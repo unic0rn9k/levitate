@@ -50,8 +50,10 @@ macro_rules! num {
 
 use std::ops::*;
 
+#[const_trait]
 pub trait PrimitiveFloat: Float + FloatWrapper<InnerFloat = Self> {}
 
+#[const_trait]
 pub trait FloatWrapper {
     type InnerFloat: Float;
     fn from_primitive(f: Self::InnerFloat) -> Self;

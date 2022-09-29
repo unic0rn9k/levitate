@@ -7,6 +7,12 @@ pub struct Complex<T: Float> {
     pub im: T,
 }
 
+impl<T: Float> Complex<T> {
+    fn norm_sqrt(&self) -> T {
+        self.re * self.re + self.im * self.im
+    }
+}
+
 macro_rules! impl_complex_plus_min {
     ($op: tt, $trait: ident, $fn: ident) => {
         impl<T: Float> $trait<Self> for Complex<T> {
@@ -32,8 +38,9 @@ impl<T: Float> Mul<Self> for Complex<T> {
 impl<T: Float> Div<Self> for Complex<T> {
     type Output = Self;
     fn div(self, other: Self) -> Self {
-        let re = self.re * other.re + self.im * other.im;
-        let im = self.re * other.im - self.im * other.re;
+        let norm_sqrt = other.norm_sqrt();
+        let re = (self.re * other.re + self.im * other.im) / norm_sqrt;
+        let im = (self.im * other.re - self.re * other.im) / norm_sqrt;
         Self::Output { re, im }
     }
 }
@@ -209,3 +216,12 @@ impl_op_assign!(* MulAssign mul_assign);
 impl_op_assign!(/ DivAssign div_assign);
 impl_op_assign!(- SubAssign sub_assign);
 impl_op_assign!(+ AddAssign add_assign);
+
+#[test]
+fn opposites() {
+    let z1 = re(-2.3) + im(3.);
+    let z2 = re(4.1) - im(2.);
+
+    assert_eq!((z1 * z2) / z2, z1);
+    assert_eq!((z1 + z2) - z2, z1);
+}
