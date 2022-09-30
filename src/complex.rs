@@ -227,6 +227,10 @@ fn opposites() {
     let z1 = re(-2.3) + im(3.);
     let z2 = re(4.1) - im(2.);
 
-    assert_eq!((z1 * z2) / z2, z1);
+    let test_1_error = (((z1 * z2) / z2) - z1).norm_sqrt();
+    assert!(
+        test_1_error < 0.000000000000000000000000000001,
+        "error: {test_1_error}"
+    );
     assert_eq!((z1 + z2) - z2, z1);
 }
