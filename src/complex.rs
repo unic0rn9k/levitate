@@ -27,6 +27,8 @@ macro_rules! impl_complex_plus_min {
 impl_complex_plus_min!(+, Add, add);
 impl_complex_plus_min!(-, Sub, sub);
 
+// (a+bi)*(c+di)
+// (ac-bd)+(ad+bc)i
 impl<T: Float> Mul<Self> for Complex<T> {
     type Output = Self;
     fn mul(self, other: Self) -> Self {
@@ -35,6 +37,9 @@ impl<T: Float> Mul<Self> for Complex<T> {
         Self::Output { re, im }
     }
 }
+
+// (a+bi)/(c+di)
+// ((ac+bd)+(bc-ad)i) /c^2 + d^2
 impl<T: Float> Div<Self> for Complex<T> {
     type Output = Self;
     fn div(self, other: Self) -> Self {
